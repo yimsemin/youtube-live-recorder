@@ -1,0 +1,41 @@
+# Local operator instructions and investigation artifacts
+AGENTS.md
+RECOVERY_*.md
+*.framemd5
+google-drive-online-only-test.txt
+docs/investigation/
+
+# Private configuration and runtime state
+config/*.json
+!config/*.example.json
+config/*.pid
+config/*.lock
+config/*.request
+config/*.disabled
+config/*.txt
+auth/
+logs/
+recordings/
+staging/
+
+# Bundled runtimes and generated Python files
+recorder/streamlink-*-x86_64/
+recorder/yt-dlp.exe
+recorder/ffmpeg*/
+recorder/python*/
+recorder/selftest-output/
+**/__pycache__/
+*.py[cod]
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
+*.pem
+*.pfx
+*.key
+*.log

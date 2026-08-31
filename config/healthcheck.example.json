@@ -1,0 +1,12 @@
+{
+  "PingUrl": "",
+  "StorageProcessName": "",
+  "StatusMaxAgeSeconds": 120,
+  "ReconnectGraceSeconds": 180,
+  "FileStallSeconds": 180,
+  "AlertMinimumFreeSpaceGB": 60,
+  "HttpTimeoutSeconds": 10,
+  "HttpRetries": 3,
+  "LogMaxMB": 5,
+  "LogBackups": 5
+}
