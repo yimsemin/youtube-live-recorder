@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YouTube 녹화 제어판</title>
+<style>
+  :root {
+    --bg: #0f1216; --card: #181d24; --line: #2a313c; --text: #e7ebf0;
+    --muted: #98a2b3; --ok: #2fbf71; --warn: #e6a23c; --bad: #e5534b; --accent: #3d7eff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 "Segoe UI", "Malgun Gothic", system-ui, sans-serif; }
+  header { padding: 18px 20px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  h1 { font-size: 18px; margin: 0; }
+  .clock { color: var(--muted); font-size: 13px; }
+  main { max-width: 960px; margin: 0 auto; padding: 20px; display: grid; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .card h2 { font-size: 14px; margin: 0 0 12px; color: var(--muted); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .04em; }
+  .badge { display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 18px; }
+  .b-ok { background: rgba(47,191,113,.15); color: var(--ok); }
+  .b-warn { background: rgba(230,162,60,.15); color: var(--warn); }
+  .b-bad { background: rgba(229,83,75,.15); color: var(--bad); }
+  .row { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: 0; }
+  .muted { color: var(--muted); }
+  .btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  button { font: inherit; cursor: pointer; border: 1px solid var(--line); background: #222834;
+    color: var(--text); border-radius: 10px; padding: 12px; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 700; }
+  button.danger { background: rgba(229,83,75,.14); border-color: var(--bad); color: #ffb4ae; }
+  button small { display: block; font-weight: 400; color: var(--muted); margin-top: 3px; font-size: 12px; }
+  button.danger small { color: #e6a29c; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  .dot { width: 9px; height: 9px; border-radius: 999px; display: inline-block; margin-right: 6px; }
+  .dot.on { background: var(--ok); } .dot.off { background: #556; }
+  pre { background: #0c0f13; border: 1px solid var(--line); border-radius: 8px; padding: 10px;
+    overflow: auto; font-size: 12px; color: #c7d0da; max-height: 220px; white-space: pre; }
+  .scroll { max-height: 320px; overflow-y: auto; }
+  form { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+  form label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  form input { font: inherit; background: #0c0f13; border: 1px solid var(--line);
+    color: var(--text); border-radius: 8px; padding: 8px; }
+  form .wide { grid-column: 1 / -1; }
+  #toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: #222834; border: 1px solid var(--accent); border-radius: 10px;
+    padding: 10px 18px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #toast.show { opacity: 1; }
+  @media (max-width: 620px) { form { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>YouTube LIVE 녹화 제어판</h1>
+  <span class="clock" id="clock">연결 중…</span>
+</header>
+<main>
+  <div class="card">
+    <h2>현재 상태</h2>
+    <div id="state"><span class="badge b-warn">불러오는 중</span></div>
+    <p class="muted" id="stateMsg" style="margin:10px 0 0"></p>
+  </div>
+
+  <div class="card">
+    <h2>동작</h2>
+    <div class="btns">
+      <button class="primary" data-post="/api/recorder/start">녹화 시작<small>감시기까지 함께 켭니다</small></button>
+      <button data-post="/api/recorder/stop">안전 종료<small>현재 MKV를 마감합니다</small></button>
+      <button data-post="/api/recorder/restart">재시작<small>안전 종료 후 다시 시작</small></button>
+      <button class="danger" data-post="/api/system/stop-all" data-confirm="녹화기·감시기·대시보드를 모두 종료합니다. 진행할까요?">전체 종료<small>모든 프로세스 정리</small></button>
+      <button data-post="/api/auth/login">YouTube 로그인<small>Firefox 창이 열립니다</small></button>
+      <button data-post="/api/open-folder">저장 폴더 열기<small>녹화물 위치</small></button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>YouTube 로그인 상태</h2>
+    <div id="auth" class="muted">확인 중…</div>
+  </div>
+
+  <div class="card">
+    <h2>시스템 프로세스</h2>
+    <table><thead><tr><th>구성요소</th><th>상태</th><th>PID</th><th>비고</th></tr></thead>
+      <tbody id="procs"></tbody></table>
+  </div>
+
+  <div class="card">
+    <h2>저장 공간</h2>
+    <div class="row"><span>녹화 저장소</span><span id="storage" class="muted">-</span></div>
+    <div class="row"><span>로컬 디스크(예비)</span><span id="localDisk" class="muted">-</span></div>
+  </div>
+
+  <div class="card">
+    <h2>설정 <span class="muted">(재시작 후 적용)</span></h2>
+    <form id="settings">
+      <label class="wide">방송 URL <input name="Url" placeholder="https://www.youtube.com/live/..."></label>
+      <label class="wide">저장 위치 <input name="RecordingDirectory" placeholder="G:\\... 또는 절대 경로"></label>
+      <label>분할 시간(시간) <input name="SegmentHours" type="number" step="0.25" min="0.25" max="12"></label>
+      <label>최소 여유공간(GB) <input name="MinimumFreeSpaceGB" type="number" min="10" max="2000"></label>
+      <label>yt-dlp 포맷 <input name="YtDlpFormat" placeholder="300"></label>
+      <div class="wide"><button class="primary" type="submit">설정 저장</button></div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>최근 파일</h2>
+    <div class="scroll"><table><thead><tr><th>파일</th><th>크기(GB)</th><th>수정</th></tr></thead>
+      <tbody id="files"></tbody></table></div>
+  </div>
+
+  <div class="card">
+    <h2>연속성 로그</h2>
+    <pre id="continuity">-</pre>
+    <h2 style="margin-top:14px">녹화 로그</h2>
+    <pre id="reclog">-</pre>
+  </div>
+</main>
+<div id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let settingsTouched = false;
+
+function toast(msg) {
+  const el = $("#toast"); el.textContent = msg; el.classList.add("show");
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 3200);
+}
+
+async function post(path, confirmMsg) {
+  if (confirmMsg && !confirm(confirmMsg)) return;
+  try {
+    const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    const d = await r.json();
+    toast(d.message || (d.ok ? "완료" : "실패"));
+  } catch (e) { toast("요청 실패: " + e); }
+  setTimeout(refresh, 800);
+}
+
+document.querySelectorAll("button[data-post]").forEach((b) => {
+  b.addEventListener("click", () => post(b.dataset.post, b.dataset.confirm));
+});
+
+$("#settings").addEventListener("input", () => { settingsTouched = true; });
+$("#settings").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const body = {};
+  new FormData(e.target).forEach((v, k) => { if (String(v).trim() !== "") body[k] = v; });
+  try {
+    const r = await fetch("/api/settings", { method: "POST",
+      headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const d = await r.json();
+    toast(d.message || "저장됨");
+    settingsTouched = false;
+  } catch (e) { toast("저장 실패: " + e); }
+});
+
+const STATE_LABEL = {
+  recording: ["녹화 중", "b-ok"], connecting: ["연결 중", "b-warn"],
+  reconnecting: ["재접속 중", "b-warn"], starting: ["시작 중", "b-warn"],
+  paused_low_disk: ["일시중지(디스크 부족)", "b-bad"], stopped: ["정지됨", "b-warn"],
+  unexpected_stop: ["비정상 종료", "b-bad"],
+};
+
+function fmtDisk(d) {
+  if (!d || d.error) return "확인 불가";
+  return `여유 ${d.freeGB} GB / 전체 ${d.totalGB} GB (사용 ${d.usedPercent}%)`;
+}
+
+async function refresh() {
+  let d;
+  try { d = await (await fetch("/api/status")).json(); }
+  catch { $("#clock").textContent = "서버에 연결할 수 없습니다"; return; }
+
+  $("#clock").textContent = d.serverTimeKST + " KST";
+  const st = (d.recorder.State || "unknown").toLowerCase();
+  const [label, cls] = STATE_LABEL[st] || [st, "b-warn"];
+  $("#state").innerHTML = `<span class="badge ${cls}">${label}</span>`;
+  $("#stateMsg").textContent = d.recorder.Message || "";
+
+  const a = d.auth || {};
+  const authText = { ok: "정상 — 로그인 세션 유효", login_required: "로그인 필요 — [YouTube 로그인] 버튼을 누르세요",
+    unknown: "확인 불가" }[a.State] || "아직 확인 안 됨";
+  $("#auth").innerHTML = `<b>${authText}</b><br><span class="muted">${a.Detail || ""} ${a.CheckedKST ? "(" + a.CheckedKST + ")" : ""}</span>`;
+
+  $("#procs").innerHTML = (d.processes || []).map((p) => `<tr>
+    <td>${p.label}</td>
+    <td><span class="dot ${p.alive ? "on" : "off"}"></span>${p.alive ? "실행 중" : "정지"}</td>
+    <td>${p.pid || "-"}</td><td class="muted">${p.note || ""}</td></tr>`).join("");
+
+  $("#storage").textContent = fmtDisk(d.storage);
+  $("#localDisk").textContent = fmtDisk(d.localDisk);
+
+  $("#files").innerHTML = (d.recordings || []).map((f) => `<tr>
+    <td>${f.active ? "● " : ""}${f.name}</td><td>${f.sizeGB}</td><td class="muted">${f.modifiedKST}</td></tr>`).join("")
+    || `<tr><td colspan="3" class="muted">아직 없음</td></tr>`;
+
+  $("#continuity").textContent = (d.logs.continuity || []).join("\n") || "-";
+  $("#reclog").textContent = (d.logs.recorder || []).join("\n") || "-";
+
+  if (!settingsTouched && d.config) {
+    for (const k of ["Url", "RecordingDirectory", "SegmentHours", "MinimumFreeSpaceGB", "YtDlpFormat"]) {
+      const input = document.querySelector(`#settings [name="${k}"]`);
+      if (input && document.activeElement !== input && d.config[k] != null) input.value = d.config[k];
+    }
+  }
+}
+
+refresh();
+setInterval(refresh, 3000);
+</script>
+</body>
+</html>

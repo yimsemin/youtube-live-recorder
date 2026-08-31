@@ -1,0 +1,14 @@
+{
+  "FallbackDirectory": "<ABSOLUTE_FALLBACK_DIRECTORY>",
+  "FailureConfirmSeconds": 1,
+  "PrimaryStableSeconds": 15,
+  "MainGrowthConfirmSeconds": 8,
+  "CheckIntervalSeconds": 1,
+  "FallbackSegmentMinutes": 30,
+  "FallbackMinimumFreeSpaceGB": 50,
+  "RestartPrimaryWhenMissing": true,
+  "RestartCooldownSeconds": 60,
+  "LogMaxMB": 10,
+  "LogBackups": 10
+}
+
