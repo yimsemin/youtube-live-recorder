@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 from common import (
     CONFIG_DIR, LOGS_DIR, ROOT, KST,
     acquire_lock, atomic_json_write, find_ffmpeg, kst_text as now_kst_text,
-    parse_kst as _parse_kst, release_lock, setup_rotating_logger, ytdlp_path,
+    parse_kst as _parse_kst, release_lock, setup_rotating_logger, ytdlp_path, ytdlp_cache_args,
 )
 
 CONFIG_PATH = CONFIG_DIR / "recorder.json"
@@ -86,7 +86,7 @@ class Backfill:
 
     def read_metadata(self) -> None:
         command = [
-            str(self.ytdlp), "--ignore-config", "--no-warnings", "--dump-single-json",
+            str(self.ytdlp), "--ignore-config", *ytdlp_cache_args(), "--no-warnings", "--dump-single-json",
             "--skip-download", self.config["Url"],
         ]
         result = subprocess.run(
@@ -215,7 +215,7 @@ class Backfill:
         self.consolidate_fragments("140")
         output_template = str(STAGING_DIR / f"{self.staging_base}.%(ext)s")
         command = [
-            str(self.ytdlp), "--ignore-config", "--quiet", "--no-warnings",
+            str(self.ytdlp), "--ignore-config", *ytdlp_cache_args(), "--quiet", "--no-warnings",
             "--live-from-start", "--concurrent-fragments", "16",
             "--ffmpeg-location", str(self.ffmpeg.parent),
             "-f", "298+140", "--merge-output-format", "mkv", "--remux-video", "mkv",

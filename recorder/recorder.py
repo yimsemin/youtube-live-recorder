@@ -30,6 +30,7 @@ from common import (
     acquire_lock, atomic_json_write, find_ffmpeg, graceful_stop, kst_text,
     load_json, now_kst, release_lock, setup_rotating_logger,
     validate_youtube_url, ytdlp_path,
+    DEFAULT_JS_RUNTIME, js_runtime_arg, ytdlp_cache_args,
 )
 
 CONFIG_PATH = CONFIG_DIR / "recorder.json"
@@ -45,7 +46,7 @@ DEFAULTS = {
     "AuthProfileDir": "",
     "YtDlpCookiesFile": "",
     "YtDlpFormat": "300/95/best",
-    "YtDlpJsRuntime": "node:C:\\Program Files\\nodejs\\node.exe",
+    "YtDlpJsRuntime": DEFAULT_JS_RUNTIME,
     "YtDlpExtractorArgs": "youtube:player_client=default,web_safari;player_js_version=actual",
     "MinimumFreeSpaceGB": 50,
     "ResumeMarginGB": 5,
@@ -89,6 +90,10 @@ def validate_config(config: dict) -> None:
     for key in ("YtDlpFormat", "YtDlpJsRuntime", "YtDlpExtractorArgs"):
         if not str(config.get(key, "")).strip():
             raise ValueError(f"{key} must be non-empty")
+
+    runtime_path = js_runtime_arg(config["YtDlpJsRuntime"]).partition(":")[2]
+    if runtime_path and not Path(runtime_path).is_file():
+        raise ValueError(f"JS runtime was not found: {runtime_path} (place node.exe in recorder\\node\\)")
 
     profile = str(config.get("AuthProfileDir", "")).strip()
     cookies = str(config.get("YtDlpCookiesFile", "")).strip()
@@ -228,14 +233,14 @@ class Recorder:
 
     def build_receiver_args(self) -> list[str]:
         args = [str(self.ytdlp), "--ignore-config", "--newline",
-                "--ffmpeg-location", str(self.ffmpeg)]
+                "--ffmpeg-location", str(self.ffmpeg), *ytdlp_cache_args()]
         profile = str(self.config.get("AuthProfileDir", "")).strip()
         if profile:
             args += ["--cookies-from-browser", f"firefox:{profile}"]
         elif str(self.config.get("YtDlpCookiesFile", "")).strip():
             args += ["--cookies", str(self.config["YtDlpCookiesFile"])]
         args += [
-            "--js-runtimes", str(self.config["YtDlpJsRuntime"]),
+            "--js-runtimes", js_runtime_arg(self.config["YtDlpJsRuntime"]),
             "--extractor-args", str(self.config["YtDlpExtractorArgs"]),
             "-f", str(self.config["YtDlpFormat"]),
             "--retries", "infinite",

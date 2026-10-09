@@ -6,8 +6,14 @@ A Windows tool that records a public YouTube LIVE stream **as an ordinary viewer
 and stores it as continuous MKV parts. It adds failure monitoring, a local
 fallback capture, DVR catch-up, continuity checks, and a local dashboard.
 
-It never touches your YouTube account, channel, streaming settings, or the API.
+It does not modify your YouTube account, channel, streaming settings, or the API.
 Reception uses `yt-dlp` only.
+
+> **Note:** This tool accesses YouTube by automated means and saves stream content,
+> which may conflict with the [YouTube Terms of Service](https://www.youtube.com/t/terms).
+> Long continuous recording may trigger access limits or account restrictions, and
+> YouTube's policies can change at any time. Use it at your own risk, ideally with a
+> dedicated Google account, and respect the broadcaster's rights.
 
 This repository contains **no** real stream URL, storage location, Healthchecks.io
 ping URL, runtime state, logs, or recordings. Your own settings are made by
@@ -35,9 +41,9 @@ copying `config/*.example.json` and are excluded via `.gitignore`.
 ## Requirements
 
 - Windows 10 / 11
-- **Node.js** at `C:\Program Files\nodejs\node.exe` — used by yt-dlp to solve its
-  JS challenge
-- Download and place these yourself (all are `.gitignore`d):
+- Download and place these yourself (all are `.gitignore`d, so deleting this folder removes them):
+  - `recorder\node\node.exe` — portable Node.js (zip) from <https://nodejs.org/en/download>; used by yt-dlp
+    to solve its JS challenge
   - `recorder\yt-dlp.exe` — <https://github.com/yt-dlp/yt-dlp/releases>
   - Python + FFmpeg — either an embedded Python in `recorder\python\`, **or** the
     Streamlink Windows portable build in `recorder\streamlink-*-x86_64\` (its

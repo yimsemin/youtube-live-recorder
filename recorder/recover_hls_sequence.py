@@ -21,6 +21,14 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_JS_RUNTIME = "node:recorder/node/node.exe"
+
+
+def js_runtime_arg(value: str) -> str:
+    name, sep, path = (value.strip() or DEFAULT_JS_RUNTIME).partition(":")
+    if sep and path and not Path(path).is_absolute():
+        path = str(ROOT / path)
+    return f"{name}{sep}{path}"
 
 
 def find_tools() -> tuple[Path, Path]:
@@ -53,8 +61,8 @@ def manifest_template(video_url: str, cookies_file: Path, js_runtime: str, extra
     ytdlp, ffmpeg = find_tools()
     result = subprocess.run(
         [
-            str(ytdlp), "--ffmpeg-location", str(ffmpeg),
-            "--cookies", str(cookies_file), "--js-runtimes", js_runtime,
+            str(ytdlp), "--ffmpeg-location", str(ffmpeg), "--cache-dir", str(ROOT / "cache" / "yt-dlp"),
+            "--cookies", str(cookies_file), "--js-runtimes", js_runtime_arg(js_runtime),
             "--extractor-args", extractor_args, "-f", format_id,
             "--get-url", video_url,
         ],
@@ -106,7 +114,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--url", required=True)
     parser.add_argument("--cookies-file", type=Path, required=True)
-    parser.add_argument("--js-runtime", default=r"node:C:\Program Files\nodejs\node.exe")
+    parser.add_argument("--js-runtime", default="")
     parser.add_argument("--extractor-args", default="youtube:player_client=default,web_safari;player_js_version=actual")
     parser.add_argument("--format-id", default="300")
     parser.add_argument("--start-sequence", type=int, required=True)

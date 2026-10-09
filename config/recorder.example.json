@@ -5,7 +5,7 @@
   "AuthProfileDir": "",
   "YtDlpCookiesFile": "",
   "YtDlpFormat": "300/95/best",
-  "YtDlpJsRuntime": "node:C:\\Program Files\\nodejs\\node.exe",
+  "YtDlpJsRuntime": "node:recorder/node/node.exe",
   "YtDlpExtractorArgs": "youtube:player_client=default,web_safari;player_js_version=actual",
   "BackfillCutoverKST": "",
   "MinimumFreeSpaceGB": 50,
