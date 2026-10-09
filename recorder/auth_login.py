@@ -21,7 +21,6 @@ import shutil
 import sqlite3
 import subprocess
 import sys
-import tempfile
 import time
 import winreg
 from pathlib import Path
@@ -29,6 +28,7 @@ from pathlib import Path
 from common import (
     CONFIG_DIR, ROOT, CREATE_NO_WINDOW,
     atomic_json_write, kst_text, read_json_or_empty, ytdlp_path,
+    CACHE_DIR, js_runtime_arg, ytdlp_cache_args,
 )
 
 RECORDER_CONFIG_PATH = CONFIG_DIR / "recorder.json"
@@ -73,7 +73,8 @@ def youtube_login_cookies(profile: Path) -> list[str]:
     db = profile / "cookies.sqlite"
     if not db.is_file():
         return []
-    tmp = Path(tempfile.gettempdir()) / f"ytr_cookies_{os.getpid()}.sqlite"
+    CACHE_DIR.mkdir(exist_ok=True)
+    tmp = CACHE_DIR / f"ytr_cookies_{os.getpid()}.sqlite"
     try:
         shutil.copy(db, tmp)
         con = sqlite3.connect(f"file:{tmp}?immutable=1", uri=True)
@@ -93,9 +94,8 @@ def youtube_login_cookies(profile: Path) -> list[str]:
 def ytdlp_can_use_cookies(profile: Path, config: dict) -> tuple[bool, str]:
     """Run yt-dlp on an ordinary public video with the SAME options the recorder uses."""
     args = [str(ytdlp_path()), "--ignore-config", "--quiet", "--no-warnings",
-            "--cookies-from-browser", f"firefox:{profile}"]
-    if str(config.get("YtDlpJsRuntime", "")).strip():
-        args += ["--js-runtimes", str(config["YtDlpJsRuntime"])]
+            "--cookies-from-browser", f"firefox:{profile}", *ytdlp_cache_args(),
+            "--js-runtimes", js_runtime_arg(config.get("YtDlpJsRuntime"))]
     if str(config.get("YtDlpExtractorArgs", "")).strip():
         args += ["--extractor-args", str(config["YtDlpExtractorArgs"])]
     args += ["--simulate", "--skip-download", "-O", "%(id)s", PROBE_VIDEO]

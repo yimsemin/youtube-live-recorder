@@ -8,6 +8,8 @@ Every tool in this folder runs on Windows against the same layout:
     <ROOT>/logs/*.log           rotating logs (git-ignored)
     <ROOT>/recorder/yt-dlp.exe  bundled receiver (git-ignored)
     <ROOT>/recorder/streamlink-*-x86_64/  portable Python + FFmpeg (git-ignored)
+    <ROOT>/recorder/node/node.exe  portable Node.js for yt-dlp's JS challenges (git-ignored)
+    <ROOT>/cache/               yt-dlp cache and temp files (git-ignored)
 
 Only the receive side is used: no YouTube account, channel, or API is changed.
 """
@@ -224,6 +226,24 @@ def ytdlp_path() -> Path:
     if not path.is_file():
         raise FileNotFoundError(f"yt-dlp.exe was not found: {path}")
     return path
+
+
+CACHE_DIR = ROOT / "cache"
+DEFAULT_JS_RUNTIME = "node:recorder/node/node.exe"
+
+
+def ytdlp_cache_args() -> list[str]:
+    """Keep yt-dlp's cache inside the install folder instead of ~/.cache."""
+    return ["--cache-dir", str(CACHE_DIR / "yt-dlp")]
+
+
+def js_runtime_arg(value: object = "") -> str:
+    """yt-dlp --js-runtimes value; a relative node path is resolved against <ROOT>."""
+    text = str(value or "").strip() or DEFAULT_JS_RUNTIME
+    name, sep, path = text.partition(":")
+    if sep and path and not Path(path).is_absolute():
+        path = str(ROOT / path)
+    return f"{name}{sep}{path}"
 
 
 # --- logging -----------------------------------------------------------

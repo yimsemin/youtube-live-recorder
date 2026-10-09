@@ -17,7 +17,7 @@ YouTube 채널·송출 설정·API는 전혀 건드리지 않습니다. 수신 �
 |---|---|---|
 | `yt-dlp.exe` | `<ROOT>\recorder\yt-dlp.exe` | <https://github.com/yt-dlp/yt-dlp/releases> |
 | Python + FFmpeg | `<ROOT>\recorder\python\` (임베디드 Python) **또는** `<ROOT>\recorder\streamlink-*-x86_64\` | 아래 설명 |
-| Node.js | `C:\Program Files\nodejs\node.exe` | <https://nodejs.org> |
+| Node.js | `<ROOT>\recorder\node\node.exe` (zip 안의 `node.exe` 만 복사) | <https://nodejs.org/en/download> |
 | Firefox | 시스템 기본 설치 | <https://www.mozilla.org/firefox/> |
 
 **Python + FFmpeg 배치 방법 (둘 중 하나):**
@@ -27,8 +27,9 @@ YouTube 채널·송출 설정·API는 전혀 건드리지 않습니다. 수신 �
   `streamlink-*-x86_64` 폴더를 통째로 `recorder\` 아래에 둡니다. 이 프로젝트는 Streamlink 자체를 쓰지 않고,
   그 배포본에 **함께 들어있는 `Python\` 과 `ffmpeg\` 만 재사용**합니다. `_resolve-python.bat` 이 자동으로 찾습니다.
 
-- Node.js 는 yt-dlp 의 JavaScript 챌린지 해결에 필요합니다. 경로가 다르면
-  `config\recorder.json` 의 `YtDlpJsRuntime` 을 맞춰 줍니다.
+- Node.js 는 yt-dlp 의 JavaScript 챌린지 해결에 필요합니다. 기본값은 `recorder/node/node.exe` 이고,
+  상대 경로는 `<ROOT>` 기준입니다. 다른 위치를 쓰려면 `config\recorder.json` 의 `YtDlpJsRuntime` 을 바꿉니다.
+- yt-dlp 캐시와 임시 파일은 `<ROOT>\cache\` 에 쌓이며 폴더를 지우면 함께 사라집니다.
 
 시각 표기는 **KST(UTC+9)** 로 고정입니다.
 
@@ -193,7 +194,8 @@ Ping URL은 로그에 기록하지 않습니다. `config\healthcheck.json` 은 �
 
 ```
 <ROOT>\
-  recorder\        Python 코드, dashboard.html, yt-dlp.exe, python\ 또는 streamlink-* 배포본
+  recorder\        Python 코드, dashboard.html, yt-dlp.exe, node\, python\ 또는 streamlink-* 배포본
+  cache\          yt-dlp 캐시, 임시 파일(비공개)
   config\          *.json 설정(비공개), *.example.json(공개), 런타임 상태/락/요청 파일
   auth\            로그인 전용 Firefox 프로필(비공개)
   logs\            recorder.log, failover.log, healthcheck.log, dashboard.log, continuity.log

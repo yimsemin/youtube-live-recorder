@@ -28,7 +28,7 @@ from common import (
     CREATE_NEW_PROCESS_GROUP,
     acquire_lock, atomic_json_write, find_ffmpeg, graceful_stop, kst_text,
     load_json, now_kst, process_alive, read_json_or_empty, release_lock,
-    setup_rotating_logger, ytdlp_path,
+    setup_rotating_logger, ytdlp_path, js_runtime_arg, ytdlp_cache_args,
 )
 
 CONFIG_PATH = CONFIG_DIR / "failover.json"
@@ -103,14 +103,14 @@ class FallbackPipeline:
     def _receiver_args(self) -> list[str]:
         rc = self.recorder_config
         args = [str(self.ytdlp), "--ignore-config", "--newline",
-                "--ffmpeg-location", str(self.ffmpeg)]
+                "--ffmpeg-location", str(self.ffmpeg), *ytdlp_cache_args()]
         profile = str(rc.get("AuthProfileDir", "")).strip()
         if profile:
             args += ["--cookies-from-browser", f"firefox:{profile}"]
         elif str(rc.get("YtDlpCookiesFile", "")).strip():
             args += ["--cookies", str(rc["YtDlpCookiesFile"])]
         args += [
-            "--js-runtimes", str(rc.get("YtDlpJsRuntime", "")),
+            "--js-runtimes", js_runtime_arg(rc.get("YtDlpJsRuntime")),
             "--extractor-args", str(rc.get("YtDlpExtractorArgs", "")),
             "-f", str(rc.get("YtDlpFormat", "300")),
             "--retries", "infinite", "--fragment-retries", "infinite",

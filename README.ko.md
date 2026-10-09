@@ -6,6 +6,12 @@ Windows에서 공개 YouTube LIVE를 **일반 시청자처럼 수신**해 MKV �
 장애 감시·로컬 예비 녹화·DVR 구간 회수·연속성 점검·로컬 대시보드를 포함합니다.
 YouTube 채널·송출 설정·API는 변경하지 않으며, 수신은 `yt-dlp` 하나만 사용합니다.
 
+> **참고:** 이 도구는 자동화된 방식으로 YouTube에 접근해 방송 내용을 저장하므로
+> [YouTube 이용약관](https://www.youtube.com/t/terms)과 충돌할 수 있습니다.
+> 장시간 연속 녹화는 접근 제한이나 계정 제한으로 이어질 수 있고, YouTube 정책은
+> 언제든 바뀔 수 있습니다. 사용에 따른 책임은 이용자에게 있으며, 가능하면 별도의
+> Google 계정을 쓰고 방송 주체의 권리를 존중해 주세요.
+
 이 저장소에는 실제 스트림 URL·저장 위치·Healthchecks.io ping URL·실행 상태·로그·녹화 파일이
 포함되지 않습니다. 개인 설정은 `config/*.example.json` 을 복사해 만들며 `.gitignore` 로 제외됩니다.
 
@@ -22,8 +28,8 @@ YouTube 채널·송출 설정·API는 변경하지 않으며, 수신은 `yt-dlp`
 ## 요구 사항
 
 - Windows 10 / 11
-- **Node.js** (`C:\Program Files\nodejs\node.exe`) — yt-dlp 의 JS 챌린지 해결용
-- 다음을 직접 내려받아 배치 (모두 `.gitignore` 대상):
+- 다음을 직접 내려받아 배치 (모두 `.gitignore` 대상이며 폴더를 지우면 함께 사라집니다):
+  - `recorder\node\node.exe` — 이동식 Node.js(zip, <https://nodejs.org/ko/download>), yt-dlp 의 JS 챌린지 해결용
   - `recorder\yt-dlp.exe` — <https://github.com/yt-dlp/yt-dlp/releases>
   - Python + FFmpeg — `recorder\python\` (임베디드 Python) **또는** Streamlink Windows 포터블 배포본
     `recorder\streamlink-*-x86_64\` (그 안의 `Python\` 과 `ffmpeg\` 를 재사용).
