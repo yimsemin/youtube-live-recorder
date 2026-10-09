@@ -21,6 +21,7 @@ staging/
 # Bundled runtimes and generated Python files
 recorder/streamlink-*-x86_64/
 recorder/yt-dlp.exe
+recorder/node/
 recorder/ffmpeg*/
 recorder/python*/
 recorder/selftest-output/
@@ -39,3 +40,14 @@ Thumbs.db
 *.pfx
 *.key
 *.log
+
+# Project-local dependencies/caches and agent files
+node_modules/
+.venv/
+dist/
+coverage/
+.cache/
+cache/
+CLAUDE.md
+.claude/settings.local.json
+.claude/worktrees/
