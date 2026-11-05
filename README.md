@@ -2,6 +2,12 @@
 
 English · [한국어](README.ko.md)
 
+> **Archived.** This project is no longer maintained and the repository is
+> read-only. It depends on `yt-dlp` and on YouTube's current behavior, so it may
+> stop working at any time without further updates. It is provided as is, with no
+> support. You are welcome to fork it under the [MIT license](LICENSE) and
+> continue on your own.
+
 A Windows tool that records a public YouTube LIVE stream **as an ordinary viewer**
 and stores it as continuous MKV parts. It adds failure monitoring, a local
 fallback capture, DVR catch-up, continuity checks, and a local dashboard.
